@@ -11,8 +11,7 @@ import PITfunctions as fn
 import pandas as pd
 
 lagThreshold = 40 #seconds
-export="Video"
-IncludeFinalAttempt="Yes"
+export="AttemptRate"
 df=fn.importTIRIS()
 
 Tags,Trial,BetweenTrials,CameraStartTimes,StartEndOfDayTimes,TagsInTank,NumberTags,AntennaSpec=fn.importMetadata(export)
@@ -32,7 +31,6 @@ df=df.merge(TagsInTank, how='outer', on=['Tag','Trial'], indicator=True)
 df=df.merge(Trial,on=['Trial'])
 df=df.sort(['Tag','Trial'])
 
-
 noAttempt=df[df['_merge'] == 'right_only']
 df=df[df['_merge']!='right_only']
    
@@ -44,12 +42,12 @@ df=pd.concat([df,noAttempt])
 df=df.sort(['Tag','Trial'])
 df=df.merge(Tags,on='Tag')
 df['HoldingTime']=df.TrialStart-df.CaptureDate
-df=df[['Tag','Presence','Category','Trial','Configuration','Flow','Temp','HoldingTime','Species','FL','TrialAttempt','DayAttempt','AttemptStart','AttemptStop','Event','startCond1','stopCond1']]
+df=df[['Tag','Presence','Category','Trial','Configuration','Flow','Temp','HoldingTime','Date','Species','FL','TrialAttempt','DayAttempt','AttemptStart','AttemptStop','Event','startCond1','stopCond1']]
 
 df['startCond2']=0
 df['stopCond2']=df['stopCond1']-df['startCond1']
 
-
+df['DayInterval']=df.groupby(['Tag','Date']).cumcount()+1 
 
 ### manual finishing touches before export
 if export == "Dmax":
